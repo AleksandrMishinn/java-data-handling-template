@@ -13,7 +13,7 @@ public class SimpleTextService implements TextService {
      */
     @Override
     public String removeString(String base, String remove) {
-        return null; //TODO
+        return base.replace(remove, "");
     }
 
     /**
@@ -24,7 +24,7 @@ public class SimpleTextService implements TextService {
      */
     @Override
     public boolean isQuestionString(String text) {
-        return false; //TODO
+        return text.endsWith("?");
     }
 
     /**
@@ -35,7 +35,14 @@ public class SimpleTextService implements TextService {
      */
     @Override
     public String concatenate(String... elements) {
-        return null; //TODO
+
+        StringBuilder concatenatedString = new StringBuilder();
+
+        for (String currentString : elements) {
+            concatenatedString.append(currentString);
+        }
+
+        return concatenatedString.toString();
     }
 
     /**
@@ -47,7 +54,21 @@ public class SimpleTextService implements TextService {
      */
     @Override
     public String toJumpCase(String text) {
-        return null; //TODO
+
+        char[] words = text.toCharArray();
+        StringBuilder stringBuilder = new StringBuilder(words.length);
+
+        for (int i = 0; i < words.length; i++) {
+
+            if (i % 2 == 1) {
+                words[i] = Character.toUpperCase(words[i]);
+            } else {
+                words[i] = Character.toLowerCase(words[i]);
+            }
+            stringBuilder.append(words[i]);
+        }
+
+        return stringBuilder.toString();
     }
 
     /**
@@ -59,6 +80,15 @@ public class SimpleTextService implements TextService {
      */
     @Override
     public boolean isPalindrome(String string) {
-       return false; //TODO
+
+        if (string.trim().length() == 0) {
+            return false;
+        }
+
+        String stringWithoutWhitespaces = string.replace(" ", "");
+        StringBuilder stringBuilder = new StringBuilder(stringWithoutWhitespaces);
+        stringBuilder.reverse();
+
+        return stringBuilder.toString().equalsIgnoreCase(stringWithoutWhitespaces);
     }
 }

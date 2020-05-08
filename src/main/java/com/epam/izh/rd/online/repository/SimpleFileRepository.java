@@ -1,5 +1,10 @@
 package com.epam.izh.rd.online.repository;
 
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 public class SimpleFileRepository implements FileRepository {
 
     /**
@@ -10,8 +15,23 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public long countFilesInDirectory(String path) {
-        return 0;
+
+        File[] files = getFilesInDirectory(path);
+
+        long numberOfFiles = 0;
+
+        for (File currentFile : files) {
+
+            if (currentFile.isDirectory()) {
+                numberOfFiles += countFilesInDirectory(path + "/" + currentFile.getName());
+            } else {
+                numberOfFiles++;
+            }
+        }
+
+        return numberOfFiles;
     }
+
 
     /**
      * Метод рекурсивно подсчитывает количество папок в директории, считая корень
@@ -21,7 +41,18 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public long countDirsInDirectory(String path) {
-        return 0;
+
+        File[] files = getFilesInDirectory(path);
+
+        long numberOfDirectory = 1;
+
+        for (File currentFile : files) {
+            if (currentFile.isDirectory()) {
+                numberOfDirectory += countDirsInDirectory(path + "/" + currentFile.getName());
+            }
+        }
+
+        return numberOfDirectory;
     }
 
     /**
@@ -32,7 +63,16 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public void copyTXTFiles(String from, String to) {
-        return;
+
+        File[] filesFrom = getFilesInDirectory(from);
+
+        for (File currentFile : filesFrom) {
+            try {
+                Files.copy(currentFile.toPath(), Paths.get(getPathToResourceDirectory(to + "/" + currentFile.getName())));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -44,7 +84,15 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public boolean createFile(String path, String name) {
-        return false;
+
+        File creatingFile = new File(getPathToResourceDirectory(path) + "/" + name);
+
+        try {
+            return creatingFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -55,6 +103,33 @@ public class SimpleFileRepository implements FileRepository {
      */
     @Override
     public String readFileFromResources(String fileName) {
-        return null;
+
+        File ReadingFile = new File("src/main/resources/" + fileName);
+        StringBuilder fileContents = new StringBuilder();
+
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(ReadingFile))) {
+
+            while (bufferedReader.ready()) {
+                fileContents.append(bufferedReader.readLine());
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return fileContents.toString();
     }
+
+    private File[] getFilesInDirectory(String directoryPath) {
+        File directory = new File(getPathToResourceDirectory(directoryPath));
+        return directory.listFiles();
+    }
+
+    private String getPathToResourceDirectory(String path) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL resource = classLoader.getResource(path);
+
+        return resource.getPath();
+    }
+
 }

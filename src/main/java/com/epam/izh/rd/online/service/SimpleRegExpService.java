@@ -1,5 +1,9 @@
 package com.epam.izh.rd.online.service;
 
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class SimpleRegExpService implements RegExpService {
 
     /**
@@ -11,7 +15,28 @@ public class SimpleRegExpService implements RegExpService {
      */
     @Override
     public String maskSensitiveData() {
-        return null;
+
+        String processedText = "";
+        String textLine;
+        File file = new File("src/main/resources/sensitive_data.txt");
+        Pattern pattern = Pattern.compile("(\\d{4})\\s(\\d{4})\\s(\\d{4})\\s(\\d{4})");
+
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+            while (bufferedReader.ready()) {
+
+                textLine = bufferedReader.readLine();
+                Matcher matcher = pattern.matcher(textLine);
+
+                if (matcher.find()) {
+                    processedText = matcher.replaceAll("$1 **** **** $4");
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return processedText;
     }
 
     /**
@@ -22,6 +47,34 @@ public class SimpleRegExpService implements RegExpService {
      */
     @Override
     public String replacePlaceholders(double paymentAmount, double balance) {
-        return null;
+
+        String processedText = "";
+        String textLine;
+        File file = new File("src/main/resources/sensitive_data.txt");
+        Pattern patternPaymentAmount = Pattern.compile("\\$\\{payment_amount}");
+        Pattern patternBalance = Pattern.compile("\\$\\{balance}");
+
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+            while (bufferedReader.ready()) {
+
+                textLine = bufferedReader.readLine();
+
+                Matcher matcherPaymentAmount = patternPaymentAmount.matcher(textLine);
+                if (matcherPaymentAmount.find()) {
+                    processedText = matcherPaymentAmount.replaceAll(String.valueOf((int) paymentAmount));
+                }
+
+                Matcher matcherBalance = patternBalance.matcher(processedText);
+                if (matcherBalance.find()) {
+                    processedText = matcherBalance.replaceAll(String.valueOf((int) balance));
+                }
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return processedText;
     }
 }
